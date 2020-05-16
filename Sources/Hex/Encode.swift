@@ -90,7 +90,15 @@ extension String {
     }
 
     public init(encodingToHex bytes: [UInt8], format: Format = .none) {
-        let bytes = UnsafeRawBufferPointer(start: bytes, count: bytes.count)
-        self.init(encodingToHex: bytes, format: format)
+        self.init(encodingToHex: bytes, count: bytes.count, format: format)
+    }
+
+    // suppress warnings for UnsafeRawBufferPointer
+    private init(
+        encodingToHex pointer: UnsafePointer<UInt8>,
+        count: Int,
+        format: Format) {
+        let buffer = UnsafeRawBufferPointer(start: pointer, count: count)
+        self.init(encodingToHex: buffer, format: format)
     }
 }

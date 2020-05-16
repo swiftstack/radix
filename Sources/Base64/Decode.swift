@@ -75,21 +75,25 @@ extension Array where Element == UInt8 {
 }
 
 extension Array where Element == UInt8 {
+    @usableFromInline
+    init?(decodingBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(decodingBase64: .init(start: pointer, count: count))
+    }
+
     @inlinable
     public init?(decodingBase64 bytes: [UInt8]) {
-        self.init(decodingBase64: UnsafeRawBufferPointer(
-            start: bytes, count: bytes.count))
+        self.init(decodingBase64: bytes, count: bytes.count)
     }
 
     @inlinable
     public init?<T: StringProtocol>(decodingBase64 string: T) {
+        let count = string.utf8.count
         let result = string.withCString { pointer in
             return [UInt8](decodingBase64: UnsafeRawBufferPointer(
-                start: pointer, count: string.utf8.count))
+                start: pointer,
+                count: count))
         }
-        guard let bytes = result else {
-            return nil
-        }
+        guard let bytes = result else { return nil }
         self = bytes
     }
 }
@@ -105,20 +109,26 @@ extension String {
 
     @inlinable
     public init?(decodingBase64 bytes: [UInt8]) {
-        self.init(decodingBase64: UnsafeRawBufferPointer(
-            start: bytes, count: bytes.count))
+        self.init(decodingBase64: bytes, count: bytes.count)
     }
 
     @inlinable
     public init?<T: StringProtocol>(decodingBase64 string: T) {
+        let count = string.utf8.count
         let result = string.withCString { pointer in
-            return String(decodingBase64: UnsafeRawBufferPointer(
-            start: pointer, count: string.utf8.count))
+            return pointer.withMemoryRebound(to: UInt8.self, capacity: count) {
+                return String(decodingBase64: $0, count: count)
+            }
         }
         guard let string = result else {
             return nil
         }
         self = string
+    }
+
+    @usableFromInline // suppress warnings for UnsafeRawBufferPointer
+    init?(decodingBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(decodingBase64: .init(start: pointer, count: count))
     }
 }
 

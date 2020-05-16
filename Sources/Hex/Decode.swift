@@ -9,43 +9,32 @@ private let table: DecodeTable = [
     -1, 10, 11, 12, 13, 14, 15, -1, -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
-extension UnsafeMutableRawBufferPointer {
-    func initialize(decodingHex bytes: UnsafeRawBufferPointer) -> Bool {
-        guard bytes.count.isEven, count.twice == bytes.count else {
-            return false
+extension Array where Element == UInt8 {
+    public init?(decodingHex bytes: UnsafeRawBufferPointer) {
+        guard bytes.count.isEven else {
+            return nil
         }
+        var result = [UInt8](repeating: 0, count: bytes.count.half)
         for i in stride(from: 0, to: bytes.count, by: 2) {
-            guard bytes[i] > 0, bytes[i + 1] > 0 else {
-                return false
-            }
             let high = table[Int(bytes[i])]
             let low = table[Int(bytes[i + 1])]
             guard high != -1, low != -1 else {
-                return false
+                return nil
             }
-            self[i.half] = UInt8(high) << 4 | UInt8(low)
+            result[i.half] = UInt8(high) << 4 | UInt8(low)
         }
-        return true
+        self = result
     }
-}
 
-extension Array where Element == UInt8 {
     public init?(decodingHex string: String) {
-        let count = string.count
-        guard count.isEven else {
-            return nil
-        }
-        var bytes = [UInt8](repeating: 0, count: count.half)
-        let buffer = UnsafeMutableRawBufferPointer(
-            start: &bytes, count: bytes.count)
+        let count = string.utf8.count
+        let result = string.withCString { Self(decodingHex: $0, count: count) }
+        guard let array = result else { return nil }
+        self = array
+    }
 
-        let result = string.withCString { bytes -> Bool in
-            return buffer.initialize(decodingHex: .init(
-                start: bytes, count: count))
-        }
-        guard result else {
-            return nil
-        }
-        self = bytes
+    // suppress warnings for UnsafeRawBufferPointer
+    private init?(decodingHex bytes: UnsafePointer<Int8>, count: Int) {
+        self.init(decodingHex: .init(start: bytes, count: count))
     }
 }

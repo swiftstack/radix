@@ -30,10 +30,14 @@ extension Array where Element == UInt8 {
 }
 
 extension Array where Element == UInt8 {
+    @usableFromInline
+    init(encodingToBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(encodingToBase64: .init(start: pointer, count: count))
+    }
+
     @inlinable
     public init(encodingToBase64 bytes: [UInt8]) {
-        self.init(encodingToBase64: UnsafeRawBufferPointer(
-            start: bytes, count: bytes.count))
+        self.init(encodingToBase64: bytes, count: bytes.count)
     }
 }
 
@@ -48,8 +52,7 @@ extension String {
 
     @inlinable
     public init(encodingToBase64 bytes: [UInt8]) {
-        self.init(encodingToBase64: UnsafeRawBufferPointer(
-            start: bytes, count: bytes.count))
+        self.init(encodingToBase64: bytes, count: bytes.count)
     }
 
     @inlinable
@@ -58,6 +61,11 @@ extension String {
             return String(encodingToBase64: UnsafeRawBufferPointer(
             start: pointer, count: string.utf8.count))
         }
+    }
+
+    @usableFromInline // suppress warnings for UnsafeRawBufferPointer
+    init(encodingToBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(encodingToBase64: .init(start: pointer, count: count))
     }
 }
 
