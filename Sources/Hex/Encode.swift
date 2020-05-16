@@ -93,12 +93,4 @@ extension String {
         let bytes = UnsafeRawBufferPointer(start: bytes, count: bytes.count)
         self.init(encodingToHex: bytes, format: format)
     }
-
-    @available(*, deprecated, message: "use format: .uppercase")
-    public init(encodingToHex bytes: [UInt8], uppercase: Bool) {
-        switch uppercase {
-        case true: self.init(encodingToHex: bytes, format: .uppercase)
-        case false: self.init(encodingToHex: bytes, format: .none)
-        }
-    }
 }
