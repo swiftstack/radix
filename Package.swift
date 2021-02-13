@@ -21,12 +21,14 @@ let package = Package(
         .target(
             name: "Base64",
             dependencies: []),
-        .testTarget(
-            name: "HexTests",
-            dependencies: ["Test", "Hex"]),
-        .testTarget(
-            name: "Base64Tests",
-            dependencies: ["Test", "Base64"]),
+        .executableTarget(
+            name: "Tests/Hex",
+            dependencies: ["Test", "Hex"],
+            path: "Tests/Hex"),
+        .executableTarget(
+            name: "Tests/Base64",
+            dependencies: ["Test", "Base64"],
+            path: "Tests/Base64"),
     ]
 )
 
