@@ -6,7 +6,7 @@ private var table: EncodeTable = .init((
     .utf8)
 
 extension Array where Element == UInt8 {
-    public init(encodingToBase64 bytes: UnsafeRawBufferPointer) {
+    public init(encodingToBase64 bytes: UnsafeBufferPointer<UInt8>) {
         var result = [UInt8]()
         for i in stride(from: 0, to: bytes.count, by: 3) {
             result.append((table[x3f: bytes[i] >> 2]))
@@ -30,14 +30,20 @@ extension Array where Element == UInt8 {
 }
 
 extension Array where Element == UInt8 {
-    @usableFromInline
-    init(encodingToBase64 pointer: UnsafePointer<UInt8>, count: Int) {
-        self.init(encodingToBase64: .init(start: pointer, count: count))
+    @inlinable
+    public init(encodingToBase64 string: String) {
+        var string = string
+        self = string.withUTF8 { .init(encodingToBase64: $0) }
     }
 
     @inlinable
     public init(encodingToBase64 bytes: [UInt8]) {
         self.init(encodingToBase64: bytes, count: bytes.count)
+    }
+
+    @inlinable // suppress warnings for UnsafeBufferPointer<UInt8>
+    init(encodingToBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(encodingToBase64: .init(start: pointer, count: count))
     }
 }
 
@@ -45,7 +51,13 @@ extension Array where Element == UInt8 {
 
 extension String {
     @inlinable
-    public init(encodingToBase64 buffer: UnsafeRawBufferPointer) {
+    public init(encodingToBase64 string: String) {
+        var string = string
+        self = string.withUTF8 { .init(encodingToBase64: $0) }
+    }
+
+    @inlinable
+    public init(encodingToBase64 buffer: UnsafeBufferPointer<UInt8>) {
         let result = [UInt8](encodingToBase64: buffer)
         self = String(decoding: result, as: UTF8.self)
     }
@@ -55,21 +67,13 @@ extension String {
         self.init(encodingToBase64: bytes, count: bytes.count)
     }
 
-    @inlinable
-    public init<T: StringProtocol>(encodingToBase64 string: T) {
-        self = string.withCString { pointer in
-            return String(encodingToBase64: UnsafeRawBufferPointer(
-            start: pointer, count: string.utf8.count))
-        }
-    }
-
-    @usableFromInline // suppress warnings for UnsafeRawBufferPointer
+    @inlinable // suppress warnings for UnsafeBufferPointer<UInt8>
     init(encodingToBase64 pointer: UnsafePointer<UInt8>, count: Int) {
         self.init(encodingToBase64: .init(start: pointer, count: count))
     }
 }
 
-// MARK: convenience
+// MARK: utils
 
 private extension Array where Element == UInt8 {
     @inline(__always)

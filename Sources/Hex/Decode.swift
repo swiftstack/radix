@@ -10,7 +10,7 @@ private let table: DecodeTable = [
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
 extension Array where Element == UInt8 {
-    public init?(decodingHex bytes: UnsafeRawBufferPointer) {
+    public init?(decodingHex bytes: UnsafeBufferPointer<UInt8>) {
         guard bytes.count.isEven else {
             return nil
         }
@@ -25,16 +25,25 @@ extension Array where Element == UInt8 {
         }
         self = result
     }
+}
 
+extension Array where Element == UInt8 {
+    @inlinable
     public init?(decodingHex string: String) {
-        let count = string.utf8.count
-        let result = string.withCString { Self(decodingHex: $0, count: count) }
-        guard let array = result else { return nil }
-        self = array
+        var string = string
+        guard let result = string.withUTF8({ Self(decodingHex: $0) }) else {
+            return nil
+        }
+        self = result
     }
 
-    // suppress warnings for UnsafeRawBufferPointer
-    private init?(decodingHex bytes: UnsafePointer<Int8>, count: Int) {
+    @inlinable
+    public init?(decodingHex bytes: [UInt8]) {
+        self.init(decodingHex: bytes, count: bytes.count)
+    }
+
+    @inlinable // suppress warnings for UnsafeRawBufferPointer
+    init?(decodingHex bytes: UnsafePointer<UInt8>, count: Int) {
         self.init(decodingHex: .init(start: bytes, count: count))
     }
 }

@@ -19,7 +19,7 @@ private let table: DecodeTable = [
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
 extension Array where Element == UInt8 {
-    public init?(decodingBase64 bytes: UnsafeRawBufferPointer) {
+    public init?(decodingBase64 bytes: UnsafeBufferPointer<UInt8>) {
         guard bytes.count.isEven else {
             return nil
         }
@@ -75,9 +75,14 @@ extension Array where Element == UInt8 {
 }
 
 extension Array where Element == UInt8 {
-    @usableFromInline
-    init?(decodingBase64 pointer: UnsafePointer<UInt8>, count: Int) {
-        self.init(decodingBase64: .init(start: pointer, count: count))
+    @inlinable
+    public init?(decodingBase64 string: String) {
+        var string = string
+        let result = string.withUTF8 { bytes -> [UInt8]? in
+            return .init(decodingBase64: bytes)
+        }
+        guard let bytes = result else { return nil }
+        self = bytes
     }
 
     @inlinable
@@ -85,22 +90,27 @@ extension Array where Element == UInt8 {
         self.init(decodingBase64: bytes, count: bytes.count)
     }
 
-    @inlinable
-    public init?<T: StringProtocol>(decodingBase64 string: T) {
-        let count = string.utf8.count
-        let result = string.withCString { pointer in
-            return [UInt8](decodingBase64: UnsafeRawBufferPointer(
-                start: pointer,
-                count: count))
-        }
-        guard let bytes = result else { return nil }
-        self = bytes
+    @usableFromInline // suppress warnings for UnsafeBufferPointer<UInt8>
+    init?(decodingBase64 pointer: UnsafePointer<UInt8>, count: Int) {
+        self.init(decodingBase64: .init(start: pointer, count: count))
     }
 }
 
 extension String {
     @inlinable
-    public init?(decodingBase64 buffer: UnsafeRawBufferPointer) {
+    public init?(decodingBase64 string: String) {
+        var string = string
+        let result = string.withUTF8 { bytes -> String? in
+            return .init(decodingBase64: bytes)
+        }
+        guard let string = result else {
+            return nil
+        }
+        self = string
+    }
+
+    @inlinable
+    public init?(decodingBase64 buffer: UnsafeBufferPointer<UInt8>) {
         guard let result = [UInt8](decodingBase64: buffer) else {
             return nil
         }
@@ -112,27 +122,13 @@ extension String {
         self.init(decodingBase64: bytes, count: bytes.count)
     }
 
-    @inlinable
-    public init?<T: StringProtocol>(decodingBase64 string: T) {
-        let count = string.utf8.count
-        let result = string.withCString { pointer in
-            return pointer.withMemoryRebound(to: UInt8.self, capacity: count) {
-                return String(decodingBase64: $0, count: count)
-            }
-        }
-        guard let string = result else {
-            return nil
-        }
-        self = string
-    }
-
-    @usableFromInline // suppress warnings for UnsafeRawBufferPointer
+    @usableFromInline // suppress warnings for UnsafeBufferPointer<UInt8>
     init?(decodingBase64 pointer: UnsafePointer<UInt8>, count: Int) {
         self.init(decodingBase64: .init(start: pointer, count: count))
     }
 }
 
-// MARK: convenience
+// MARK: utils
 
 private extension BinaryInteger {
     var isEven: Bool {
