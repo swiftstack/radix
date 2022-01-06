@@ -12,7 +12,7 @@ let package = Package(
             targets: ["Base64"]),
     ],
     dependencies: [
-        .package(name: "Test")
+        .package(name: "Test"),
     ],
     targets: [
         .target(
