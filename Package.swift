@@ -27,11 +27,18 @@ let package = Package(
             dependencies: []),
         .executableTarget(
             name: "Tests/Hex",
-            dependencies: ["Test", "Hex"],
+            dependencies: [
+                .target(name: "Hex"),
+                .product(name: "Test", package: "test"),
+
+            ],
             path: "Tests/Hex"),
         .executableTarget(
             name: "Tests/Base64",
-            dependencies: ["Test", "Base64"],
+            dependencies: [
+                .target(name: "Base64"),
+                .product(name: "Test", package: "test"),
+            ],
             path: "Tests/Base64"),
     ]
 )
@@ -78,6 +85,6 @@ extension Package.Dependency {
     static func package(name: String, source: Source) -> Package.Dependency {
         return source == .local
             ? .package(name: name, path: source.url(for: name))
-            : .package(name: name, url: source.url(for: name), .branch("dev"))
+            : .package(url: source.url(for: name), branch: "dev")
     }
 }
