@@ -21,10 +21,10 @@ let package = Package(
     targets: [
         .target(
             name: "Hex",
-            dependencies: []),
+            swiftSettings: swift6),
         .target(
             name: "Base64",
-            dependencies: []),
+            swiftSettings: swift6),
         .executableTarget(
             name: "Tests/Hex",
             dependencies: [
@@ -32,16 +32,27 @@ let package = Package(
                 .product(name: "Test", package: "test"),
 
             ],
-            path: "Tests/Hex"),
+            path: "Tests/Hex",
+            swiftSettings: swift6),
         .executableTarget(
             name: "Tests/Base64",
             dependencies: [
                 .target(name: "Base64"),
                 .product(name: "Test", package: "test"),
             ],
-            path: "Tests/Base64"),
+            path: "Tests/Base64",
+            swiftSettings: swift6),
     ]
 )
+
+let swift6: [SwiftSetting] = [
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ForwardTrailingClosures"),
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("StrictConcurrency"),
+    .enableUpcomingFeature("ImplicitOpenExistentials"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+]
 
 // MARK: - custom package source
 
