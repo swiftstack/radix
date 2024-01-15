@@ -27,8 +27,8 @@ public struct Format: OptionSet {
 extension String {
     private init(
         encodingToHexString bytes: UnsafeRawBufferPointer,
-        uppercase: Bool = false)
-    {
+        uppercase: Bool = false
+    ) {
         let count = bytes.count.twice
         let result = UnsafeMutablePointer<UInt8>.allocate(capacity: count + 1)
         for i in 0..<bytes.count {
@@ -43,8 +43,8 @@ extension String {
 
     private init(
         encodingToHexArray bytes: UnsafeRawBufferPointer,
-        uppercase: Bool = false)
-    {
+        uppercase: Bool = false
+    ) {
         guard !bytes.isEmpty else {
             self.init("[]")
             return
@@ -75,8 +75,8 @@ extension String {
 extension String {
     public init(
         encodingToHex bytes: UnsafeRawBufferPointer,
-        format: Format = .none)
-    {
+        format: Format = .none
+    ) {
         switch format.contains(.array) {
         case true:
             self.init(

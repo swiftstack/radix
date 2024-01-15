@@ -144,12 +144,12 @@ private extension UInt8 {
     }
 
     @inline(__always)
-    static func !=(lhs: UInt8, rhs: Unicode.Scalar) -> Bool {
+    static func != (lhs: UInt8, rhs: Unicode.Scalar) -> Bool {
         return lhs != UInt8(ascii: rhs)
     }
 
     @inline(__always)
-    static func ==(lhs: UInt8, rhs: Unicode.Scalar) -> Bool {
+    static func == (lhs: UInt8, rhs: Unicode.Scalar) -> Bool {
         return lhs == UInt8(ascii: rhs)
     }
 }
